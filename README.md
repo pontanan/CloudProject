@@ -1,6 +1,6 @@
-## POSTS
+# POSTS
 
-#### Get list of all posts
+### Get list of all posts
 ```
 GET /posts
 ```
@@ -16,7 +16,7 @@ content-type: application/json
 ___
 <br>
 
-#### Get specific post
+### Get specific post
 ```
 GET /posts/123
 ```
@@ -48,7 +48,7 @@ status: 400 BAD REQUEST
 ___
 <br>
 
-#### Create new post
+### Create new post
 ```
 POST /posts
 ```
@@ -87,7 +87,7 @@ Status: 400 BAD REQUEST
 ___
 <br>
 
-#### Delete specific post
+### Delete specific post
 ```
 DELETE /posts/123
 ```
@@ -114,9 +114,9 @@ Status: 400 BAD REQUEST
 <br>
 
 
-## COMMENTS
+# COMMENTS
 
-#### Get list of all comments to a specific post
+### Get list of all comments to a specific post
 ```
 GET /posts/123/comments
 ```
@@ -137,7 +137,7 @@ content-type: application/json
 ___
 <br>
 
-#### Get specific comment
+### Get specific comment
 ```
 GET /comments/123
 ```
@@ -170,7 +170,7 @@ status: 400 BAD REQUEST
 ___
 <br>
 
-#### Create a new comment
+### Create a new comment
 ```
 POST /comments
 ```
@@ -209,7 +209,7 @@ Status: 400 BAD REQUEST
 ___
 <br>
 
-#### Delete a specific comment
+### Delete a specific comment
 ```
 DELETE /comments/123
 ```
@@ -236,9 +236,9 @@ Status: 400 BAD REQUEST
 <br>
 
 
-## USER
+# USER
 
-#### Get user content (Name and Description)
+### Get user content (Name and Description)
 ```
 GET /users/123
 ```
@@ -266,7 +266,7 @@ status: 400 BAD REQUEST
 ___
 <br>
 
-#### Update user description
+### Update user description
 ```
 UPDATE /users/123
 ```
@@ -301,7 +301,7 @@ status: 400 BAD REQUEST
 ___
 <br>
 
-#### Create user
+### Create user
 ```
 POST /users
 ```
@@ -341,7 +341,7 @@ Status: 400 BAD REQUEST
 ___
 <br>
 
-#### Delete user
+### Delete user
 ```
 DELETE /users/123
 ```

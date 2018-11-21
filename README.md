@@ -1,10 +1,19 @@
 #Table of contents
 * [POSTS](#posts)
-  * [Get list of posts](#get-list-of-all-posts)
-  * [Get specific post](#get-specific-post)
-  * [Create new post](#create-new-post)
-  * [Delete specific post](#delete-specific-post)
+ * [Get list of posts](#get-list-of-all-posts)
+ * [Get post](#get-specific-post)
+ * [Create post](#create-new-post)
+ * [Delete post](#delete-specific-post)
 * [COMMENTS](#comments)
+ * [Get list of comments](#get-list-of-all-comments-to-a-specific-post)
+ * [Get comment](#get-specific-comment)
+ * [Create comment](#create-a-new-comment)
+ * [Delete comment](#delete-a-specific-comment)
+* [USER](#user)
+ * [Get content](#get-user-content-name-and-description)
+ * [Update description](#update-user-description)
+ * [Create user](#create-user)
+ * [Delete user](#delete-user)
 
 # POSTS
 

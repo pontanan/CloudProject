@@ -9,7 +9,7 @@ var config = {
     database: 'cityforumDB' 
 };
 
-app.get('/login', function(req, res) 
+app.get('/', function(req, res) 
 {
     // Connect to database
     sql.connect(config, function (err) 
@@ -32,4 +32,9 @@ app.get('/login', function(req, res)
         });
     });
 
+});
+
+var server = app.listen(5000, function () 
+{
+    console.log('Server is running..');
 });

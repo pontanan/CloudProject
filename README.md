@@ -26,7 +26,7 @@ GET /posts/123
 ###### Input
 Name | Type | Description
 ---  | ---  | ---
-PID | int | ID of the post sent in the uri
+PID  | int  | ID of the post sent in the uri
 
 ###### Response
 _If succcessfully fetched post, the response contains satus 200 and the fetched post_

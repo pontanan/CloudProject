@@ -15,7 +15,7 @@ content-type: application/json
 [{PID: 1, UID: 67, Content: 'here is some content', LikeCount: 7, DislikeCount: 9, Time: 467546546}, ...] 
 ```
 
----
+___
 <br>
 
 #### Get specific post
@@ -47,7 +47,7 @@ _If post does not exist_
 status: 400 BAD REQUEST
 ```
 
----
+___
 <br>
 
 #### Create new post
@@ -86,7 +86,7 @@ _If user does not exist or content is an empty string_
 Status: 400 BAD REQUEST
 ```
 
----
+___
 <br>
 
 #### Delete specific post

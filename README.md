@@ -16,6 +16,8 @@ content-type: application/json
 ```
 
 <br>
+***
+<br>
 
 #### Get specific post
 ```
@@ -46,6 +48,8 @@ _If post does not exist_
 status: 400 BAD REQUEST
 ```
 
+<br>
+***
 <br>
 
 #### Create new post
@@ -83,7 +87,8 @@ _If user does not exist or content is an empty string_
 ```
 Status: 400 BAD REQUEST
 ```
-
+<br>
+***
 <br>
 
 #### Delete specific post

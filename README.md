@@ -1,5 +1,5 @@
 #Table of contents
-* [POSTS](https://github.com/pontanan/CloudProject#posts)
+* [POSTS](#posts)
 *
 *
 *

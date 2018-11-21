@@ -1,4 +1,4 @@
-#Table of contents
+# Table of contents
 * [POSTS](#posts)
   * [Get list of posts](#get-list-of-all-posts)
   * [Get post](#get-specific-post)

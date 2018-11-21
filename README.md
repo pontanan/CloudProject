@@ -3,7 +3,9 @@
 ### POSTS
 
 ##### Get list of all posts
+---
 |GET /posts|
+---
 
 ##### Response
 If succcessfully fetched, response contains satus 200 and an array with all the posts

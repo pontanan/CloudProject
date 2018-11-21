@@ -111,7 +111,9 @@ _if post does not exist_
 Status: 400 BAD REQUEST
 ```
 
-
+<br>
+<br>
+<br>
 
 
 ## COMMENTS
@@ -231,7 +233,9 @@ _if post or comment does not exist_
 Status: 400 BAD REQUEST
 ```
 
-
+<br>
+<br>
+<br>
 
 
 ## USER

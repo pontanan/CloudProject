@@ -1,5 +1,5 @@
 
-/**
+/** Following: https://blog.cloudboost.io/how-to-make-an-oauth-2-server-with-node-js-a6db02dc2ce7
  *
  * @param router - we assign routes and endpoint functions for each route
  *                  to this object.

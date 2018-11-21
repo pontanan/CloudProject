@@ -1,6 +1,6 @@
 # CloudProject
 
-### POSTS
+## POSTS
 
 #### Get list of all posts
 ```
@@ -8,7 +8,7 @@ GET /posts
 ```
 
 ###### Response
-If succcessfully fetched, response contains satus 200 and an array with all the posts
+_If succcessfully fetched, response contains satus 200 and an array with all the posts_
 ```
 status: 200 OK
 content-type: application/json
@@ -28,7 +28,7 @@ Name | Type | Description
  PID | int  | ID of the post sent in the uri
 
 ###### Response
-If succcessfully fetched post, the response contains satus 200 and the fetched post
+_If succcessfully fetched post, the response contains satus 200 and the fetched post_
 ```
 status: 200 OK
 content-type: application/json
@@ -41,7 +41,7 @@ Time: 467546546
 ```
 
 ###### Response
-If post does not exist
+_If post does not exist_
 ```
 status: 400 BAD REQUEST
 ```
@@ -61,7 +61,7 @@ Content | string | Content of the post, sent in the body
    Time |   int  | Time of the post creation, sent in the body
    
 ###### Body of request
-If succcessfully fetched post, the response contains satus 200 and the fetched post
+_If succcessfully fetched post, the response contains satus 200 and the fetched post_
 ```
 content-type: application/json
 {
@@ -72,14 +72,14 @@ content-type: application/json
 ```
 
 ###### Response
-If user exist and content is not an empty string, the response contains status code 201 and the new created post.
+_If user exist and content is not an empty string, the response contains status code 201 and the new created post._
 ```
 status: 201 CREATED
 Location: /posts/567
 ```
 
 ###### Response
-If user does not exist or content is an empty string
+_If user does not exist or content is an empty string_
 ```
 Status: 400 BAD REQUEST
 ```
@@ -94,13 +94,13 @@ Name | Type | Description
  PID | int  | ID of the post sent in the uri
 
 ###### Response
-If successfully deleted
+_If successfully deleted_
 ```
 Status: 204 DELETED
 ```
 
 ###### Response
-if post does not exist
+_if post does not exist_
 ```
 Status: 400 BAD REQUEST
 ```

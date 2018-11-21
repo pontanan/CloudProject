@@ -1,6 +1,3 @@
-# CityForum
-
-
 ## POSTS
 
 #### Get list of all posts

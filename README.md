@@ -2,7 +2,7 @@
 
 ### POSTS
 
-##### Get list of all posts
+#### Get list of all posts
 ```
 GET /posts
 ```
@@ -15,7 +15,7 @@ content-type: application/json
 [{post-id: 1, user-id: 67, content: 'here is some content', LikeCount: 7, DislikeCount: 9, Time: 467546546}, ...] 
 ```
 
-##### Get specific post
+#### Get specific post
 ```
 GET /posts/123
 ```

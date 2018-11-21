@@ -27,6 +27,25 @@ const express = require('express')
 //Initialise the express app
 const expressApp = express()
 
+/* Here we require the authRoutesMethods object from the module
+ that we just made */
+ const authRoutesMethods =
+ require('./authorisation/authRoutesMethods')
+ (userDBHelper)
+
+/* Now we instantiate the authRouter module and inject all
+of its dependencies. */
+const authRouter =
+      require('./authorisation/authRouter')
+                                 (express.Router(),
+                                            expressApp,
+                                                  authRoutesMethods)
+
+/* Here we asign the authRouter as middleware in the express app.
+By doing this all request sent to routes that start with /auth
+will be handled by this router*/
+expressApp.use('/auth', authRouter)
+
 //MARK: --------------- REQUIRED OBJECTS
 
 //MARK: --------------- SET UP MIDDLEWARE

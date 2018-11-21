@@ -1,9 +1,9 @@
 #Table of contents
 * [POSTS](#posts)
-...* [Get list of posts](#get-list-of-all-posts)
-...* [Get specific post](#get-specific-post)
-...* [Create new post](#create-new-post)
-...* [Delete specific post](#delete-specific-post)
+  * [Get list of posts](#get-list-of-all-posts)
+  * [Get specific post](#get-specific-post)
+  * [Create new post](#create-new-post)
+  * [Delete specific post](#delete-specific-post)
 * [COMMENTS](#comments)
 
 # POSTS

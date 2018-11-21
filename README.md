@@ -84,6 +84,8 @@ _If user does not exist or content is an empty string_
 Status: 400 BAD REQUEST
 ```
 
+<br>
+
 #### Delete specific post
 ```
 DELETE /posts/123

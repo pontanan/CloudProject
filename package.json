@@ -21,7 +21,7 @@
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.18.3",
     "express": "^4.16.4",
-    "mssql": "^4.2.3",
-    "node-oauth2-server": "^2.4.0"
+    "googleapis": "^35.0.0",
+    "mssql": "^4.2.3"
   }
 }

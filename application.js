@@ -14,6 +14,8 @@ const oauth2Client = new google.auth.OAuth2(
     jsonAuthContent.web.redirect_uris
 );
 
+    //https://stackoverflow.com/questions/43345149/error-global-connection-already-exists-call-sql-close-first/43345466
+
 const scopes = [
     'https://www.googleapis.com/auth/plus.me',
     'https://www.googleapis.com/auth/userinfo.email',

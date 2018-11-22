@@ -50,13 +50,14 @@ app.get('/posts/:id',function(request,response){
         request.query("SELECT * FROM Post WHERE ID = @Id", function (error, recordset){
             if(error) response.status(400).json('bad request')
             else response.status(200).json(recordset)
+           
         })
 
     });
 });
-// Add new post
+// Create post
 app.post('/posts', function(request,response){
-
+    // get content from body
     const content = request.body.content;
     const like = request.body.likeCount;
     const dislike = request.body.dislikeCount;
@@ -77,7 +78,7 @@ app.post('/posts', function(request,response){
         request.input('Content',sql.Text,content);
         request.input('Like',sql.Int,like);
         request.input('Dislike',sql.Int, dislike);
-        request.input('Time',sql.Int, time);
+        request.input('Time',sql.Text, time);
   
         //query to the database to insert new post and get the id 
         request.query("INSERT INTO Post VALUES (@Content, @Like , @Dislike, @Time, @Uid); SELECT SCOPE_IDENTITY() as ID", function (error, recordset) {
@@ -90,7 +91,6 @@ app.post('/posts', function(request,response){
 });
 // Delete post
 app.delete('/posts/:id',function(request,response){
-
     // get the id from the uri
     const id = parseInt(request.params.id);
 
@@ -100,17 +100,42 @@ app.delete('/posts/:id',function(request,response){
 
         // create Request object
         var request = new sql.Request();
+
         // set parameter for query
         request.input('Id',sql.Int, id);
+
         // query to the database to get the post
         request.query("DELETE FROM Post WHERE ID = @Id", function (error, recordset){
             if(error) response.status(400).json('bad request')
             else response.status(204).json('post deleted')
         })
-
     });
 });
-// Create a user
+// Get user
+app.get('/users/:id', function(request,response){
+    // get the id from the uri
+    const id = parseInt(request.params.id);
+
+    sql.connect(config,function(error){
+
+        if(error) console.log(error);
+
+        // create Request object
+        var request = new sql.Request();
+
+        // set parameter for query
+        request.input('Id',sql.Int, id);
+
+        // query to the database to get the user
+        request.query("SELECT * FROM Account WHERE ID = @Id", function(error, recordset){
+            if(error) response.status(400).json('bad request')
+            else response.status(200).json(recordset)
+        })
+
+    })
+})
+
+// Create user
 app.post('/users', function(request, response){
 
     const username = request.body.username;
@@ -120,15 +145,15 @@ app.post('/users', function(request, response){
     sql.connect(config, function (error) {
     
         if (error) console.log(error);
-        console.log(username, password, email)
+
         // create Request object
         var request = new sql.Request();
-        // set parameters for query
-        
+
+        // set parameters for query        
         request.input('Username', sql.VarChar, username);
         request.input('Password',sql.VarChar,password);
         request.input('Email', sql.VarChar, email); 
-        
+
         // query to the database to add new user and return ID
         request.query("INSERT INTO Account (Name, Password, Email) VALUES (@Username, @Password, @Email); SELECT SCOPE_IDENTITY() as ID", function (error, recordset) {
         if(error) response.status(400).json('email or username already exist')

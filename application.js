@@ -30,7 +30,7 @@ app.get('/', function (req, res) {
   res.end()
 })
 
-app.get('/auth', function (req, res) {
+app.get('/oauth/authorise', function (req, res) {
   var authCode = req.query.code
   var error = req.query.error
 

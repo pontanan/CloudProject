@@ -26,5 +26,8 @@
   },
   "devDependencies": {
     "standard": "^12.0.1"
+  },
+  "scripts": {
+    "test": "standard && node my-tests.js"
   }
 }

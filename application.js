@@ -1,6 +1,6 @@
-var server = require("server");
+var db = require('./db');
 var express = require('express');
-var fs = require("fs");
+var fs = require('fs');
 const {google} = require('googleapis');
 
 var app = express();
@@ -13,8 +13,6 @@ const oauth2Client = new google.auth.OAuth2(
     jsonAuthContent.web.client_secret,
     jsonAuthContent.web.redirect_uris
 );
-
-    //https://stackoverflow.com/questions/43345149/error-global-connection-already-exists-call-sql-close-first/43345466
 
 const scopes = [
     'https://www.googleapis.com/auth/plus.me',
@@ -30,17 +28,12 @@ const url = oauth2Client.generateAuthUrl(
 
 app.get('/', function(req, res) 
 {
-    // Connect to database
-    
-
     res.redirect(301, url)
     res.end();
-
 });
 
 app.get('/auth', function(req, res) 
 {
-
     var authCode = req.query.code;
     var error = req.query.error;
     
@@ -49,27 +42,28 @@ app.get('/auth', function(req, res)
         const {tokens} = oauth2Client.getToken(authCode);
         oauth2Client.setCredentials(tokens);
     }
-    else{console.log(error);}
+    else{ console.log(error); }
 
     res.redirect(301, '/Account');
     res.end();
-
 });
 
 app.get('/Account', function(req, res)
 {
-    console.log("We've come to account");
-    var request = new server.request();
+    var request = new db.Request();
            
     // query to the database and get the records
-    request.query('select * from Account', function (err, recordset) 
+    request.query('select * from Account', function (err, result) 
     {
-        console.log("Trying query");
-        if (err) console.log(err)
+        if (err) {console.log(err); res.send(err.message);}
 
         // send records as a response
-        res.send(recordset);
-        console.log("query sent");
+        if(result != null){
+            var data = {};
+            data["user"] = result.recordset;
+            res.send(data);
+        }else{ res.send("\nNo data to show!"); }
+        
             
     });
 });

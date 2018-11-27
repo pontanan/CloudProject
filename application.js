@@ -4,6 +4,7 @@ var fs = require('fs')
 const { google } = require('googleapis')
 
 var app = express()
+//https://github.com/googleapis/google-api-nodejs-client
 
 var authContent = fs.readFileSync('authorisation/client_auth.json')
 var jsonAuthContent = JSON.parse(authContent)
@@ -25,11 +26,20 @@ const url = oauth2Client.generateAuthUrl({
   scope: scopes
 })
 
+oauth2client.on('tokens', (tokens) => {
+  if (tokens.refresh_token) {
+    // store the refresh_token in my database!
+    console.log(tokens.refresh_token);
+  }
+  console.log(tokens.access_token);
+});
+
 app.get('/', function (req, res) {
   res.redirect(301, url)
   res.end()
 })
 
+//Code for OAuth2-authorization
 app.get('/oauth/authorise', function (req, res) {
   var authCode = req.query.code
   var error = req.query.error

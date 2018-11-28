@@ -1,32 +1,23 @@
+var db = require('./db')
 const express = require('express');
 const bodyParser = require('body-parser');
-const sql = require("mssql");
 
 const app = express();
 app.use(bodyParser.json());
 
-const config = {
-    user: 'CityForumDBAdmin',
-    password: 'cloudService123',
-    server: 'cityforumdatabase.c7xajpqu6x8l.eu-west-1.rds.amazonaws.com',
-    database: 'cityforumDB'
-};
-
 // GET /posts
 app.get('/posts', function(request,response){
 
-    sql.connect(config, function(error){
-        if(error) response.status(500).json(error);
         //create Request object
-        var sqlRequest = new sql.Request();
+        var sqlRequest = new db.Request()
 
         //query to database to get all posts
         sqlRequest.query('SELECT * FROM Post', function(error, result){
             if(error) response.status(500).end();
             else response.status(200).json(result);
         })
-    });
 });
+/*
 // GET /posts/id
 // uri: id = 3
 app.get('/posts/:id',function(request,response){
@@ -230,7 +221,7 @@ app.post('/comments', function(request,response){
             else response.status(201).json(result.recordset[0].ID)
         });
     });
-});
+}); */
 /* TODO 
 - Fix proper error messages
 */

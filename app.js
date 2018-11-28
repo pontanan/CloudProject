@@ -12,7 +12,7 @@ const config = {
     database: 'cityforumDB'
 };
 
-// Get all posts
+// GET /posts
 app.get('/posts', function(request,response){
 
     sql.connect(config, function(error){
@@ -21,13 +21,14 @@ app.get('/posts', function(request,response){
         var sqlRequest = new sql.Request();
 
         //query to database to get all posts
-        sqlRequest.query('SELECT * FROM Post', function(error, recordset){
-            if(error) console.log(error)
-            else response.status(200).json(recordset)
+        sqlRequest.query('SELECT * FROM Post', function(error, result){
+            if(error) response.status(500).end();
+            else response.status(200).json(result);
         })
     });
 });
-// Get post
+// GET /posts/id
+// uri: id = 3
 app.get('/posts/:id',function(request,response){
 
     // get the id from the uri
@@ -41,14 +42,19 @@ app.get('/posts/:id',function(request,response){
         // set parameter for query
         sqlRequest.input('Id',sql.Int, id);
 
-        sqlRequest.query("SELECT * FROM Post WHERE ID = @Id", function (error, recordset){
-            if(error) response.status(400).json('bad request');
-            else response.status(200).json(recordset.recordset[0]);         
+        sqlRequest.query("SELECT * FROM Post WHERE ID = @Id", function (error, result){
+            if(result.recordset[0] == null){
+                response.status(400).json('post does not exist');
+            }
+            else if(error) response.status(500).end();
+            else response.status(200).json(result.recordset[0]);         
         })
     });
+   
 }); 
 
-// Create post
+// POST /posts
+// Body: { "content": "some text", "likeCount": 4, "dislikeCount": 2, "time": 43242425, "userid": 3}
 app.post('/posts', function(request,response){
 
     const content = request.body.content;
@@ -57,13 +63,13 @@ app.post('/posts', function(request,response){
     const time = request.body.time;
     const uid = request.body.userid;
 
+    //check if content is not an empty string
+    if(content == ""){ response.status(400).json('Content cant be an empty string'); return; }
+
     sql.connect(config, function(error){
         if(error) response.status(500).json(error);
 
         var sqlRequest = new sql.Request();
-
-        //check if content is not an empty string
-        if(content == ""){ response.status(400).json('bad request'); return; }
 
         sqlRequest.input('Uid',sql.Int, uid);
         sqlRequest.input('Content',sql.Text,content);
@@ -71,15 +77,20 @@ app.post('/posts', function(request,response){
         sqlRequest.input('Dislike',sql.Int, dislike);
         sqlRequest.input('Time',sql.Int, time);
   
-        sqlRequest.query("INSERT INTO Post VALUES (@Content, @Like , @Dislike, @Time, @Uid); SELECT SCOPE_IDENTITY() as ID", function (error, recordset) {
+        sqlRequest.query("INSERT INTO Post VALUES (@Content, @Like , @Dislike, @Time, @Uid); SELECT SCOPE_IDENTITY() as ID", function (error, result) {
         
-        if (error) console.log(error);
-        response.status(201).json('Location: posts/' + recordset.recordset[0].ID);
+        if (error){
+            // check if Uid is a real user
+            if(error.number == 547) response.status(400).json('user does not exist')
+            else response.status(500)
+        } 
+        else response.status(201).json('Location: posts/' + result.recordset[0].ID);
         });   
     });        
 });
 
-// Delete post
+// DELETE /posts/:id
+// uri: id = 3
 app.delete('/posts/:id',function(request,response){
 
     const id = parseInt(request.params.id);
@@ -90,13 +101,14 @@ app.delete('/posts/:id',function(request,response){
 
         sqlRequest.input('Id',sql.Int, id);
 
-        sqlRequest.query("DELETE FROM Post WHERE ID = @Id", function (error, recordset){
+        sqlRequest.query("DELETE FROM Post WHERE ID = @Id", function (error, result){        
             if(error) response.status(400).json('bad request')
             else response.status(204).json(id)
         })
     });
 });
-// Get user
+// GET /users/:id
+// uri: id = 3
 app.get('/users/:id', function(request,response){
 
     const id = parseInt(request.params.id);
@@ -108,14 +120,16 @@ app.get('/users/:id', function(request,response){
 
         sqlRequest.input('Id',sql.Int, id);
 
-        sqlRequest.query("SELECT * FROM Account WHERE ID = @Id", function(error, recordset){
-            if(error) response.status(400).json('bad request')
-            else response.status(200).json(recordset)
+        sqlRequest.query("SELECT * FROM Account WHERE ID = @Id", function(error, result){
+            if(result.recordset[0] == null) response.status(400).json('user does not exist');            
+            else if(error) response.status(400).json('bad request');
+            else response.status(200).json(result.recordset[0]);
         });
     });
 })
 
-// Create user
+// POST /users
+// Body: { "username": "Alice", "password": "3423dfs4354", "email": "alice@gmail.com" }
 app.post('/users', function(request, response){
 
     const username = request.body.username;
@@ -126,18 +140,23 @@ app.post('/users', function(request, response){
         if(error) response.status(500).json(error);
 
         var sqlRequest = new sql.Request();
- 
         sqlRequest.input('Username', sql.VarChar, username);
         sqlRequest.input('Password',sql.VarChar,password);
         sqlRequest.input('Email', sql.VarChar, email); 
 
-        sqlRequest.query("INSERT INTO Account (Name, Password, Email) VALUES (@Username, @Password, @Email); SELECT SCOPE_IDENTITY() as ID", function (error, recordset) {
-            if(error) response.status(400).json('email or username already exist');
-            else response.status(201).json(recordset);          
+        sqlRequest.query("INSERT INTO Account (Name, Password, Email) VALUES (@Username, @Password, @Email); SELECT SCOPE_IDENTITY() as ID", function (error, result) {
+
+            if(error){
+                if(error.number == 2627) response.status(400).json('email or username already exist');
+                else response.status(500).end()
+            }
+            else response.status(201).json('Location: users/' + result.recordset[0].ID);      
         });
     });
 });  
-// Update user
+// PUT /users/:id
+// uri: id = 3
+// Body: { "description": "some text"}
 app.put('/users/:id', function(request, response){
 
     const id = parseInt(request.params.id);
@@ -147,38 +166,71 @@ app.put('/users/:id', function(request, response){
         if(error) response.status(500).json(error);
 
         var sqlRequest = new sql.Request();
-
         sqlRequest.input('Id', sql.Int, id);
         sqlRequest.input('Description', sql.Text, description)
 
-        sqlRequest.query("UPDATE Account SET Description = @Description WHERE ID = @Id ", function(error, recordset){
-            if(error) response.status(400).json('bad request');
+        sqlRequest.query("UPDATE Account SET Description = @Description WHERE ID = @Id ", function(error, result){
+            if(result.recordset == null) response.status(400).json('user does not exist');
+            else if(error) response.status(500).end();
             else response.status(200).json('user updated');
       });
     });
-})
+});
 // Delete user
 app.delete('/users/:id', function(request,response){
 
     const id = parseInt(request.params.id);
 
     sql.connect(config, function(error){
-        if(error) response.status(500).json(error);
+        if(error) response.json(error);
 
         var sqlRequest = new sql.Request();
-
         sqlRequest.input('Id',sql.Int, id);
 
-        sqlRequest.query("DELETE FROM Account WHERE ID = @Id", function (error, recordset){
-            if(error) response.status(400).json(error)
-
+        sqlRequest.query("DELETE FROM Account WHERE ID = @Id", function (error, result){
+            if(error) response.status(500).json(error)
             else response.status(204).json('user deleted')
         })
     });
 });
 
 // Create Comment
+// Body: { "number": 1, "content": "some text", "likeCount": 40, "dislikeCount": 10, "time": 343242, "userid": 3, "postid": 4 }
+app.post('/comments', function(request,response){
 
+    var number = request.body.number;
+    var content = request.body.content;
+    var like = request.body.likeCount;
+    var dislike = request.body.dislikeCount;
+    var time = request.body.time;
+    var uid = request.body.userid;
+    var pid = request.body.postid;
+
+    if(content == "") {
+        response.json('Content cant be an empty string');
+        return;
+    }
+
+    sql.connect(config,function(error){
+        if(error) response.json(error);
+
+        var sqlRequest = new sql.Request();
+
+        sqlRequest.input('Content',sql.Int, content);
+        sqlRequest.input('Like', sql.Int, like);
+        sqlRequest.input('Dislike', sql.Int, dislike);
+        sqlRequest.input('Time', sql.Int, time);
+        sqlRequest.input('Uid', Sql.Int, uid);
+        sqlRequest.input('Pid', sql.Int, pid);
+
+        sql.query("INSERT INTO Comment (LikeCount, DislikeCount, Content, Time, PID, UID) VALUES (@Like, @Dislike, @Content, @Time, @Pid, @Uid); SELECT SCOPE_IDENTITY() as ID", function(error, result){
+            //Check if post exist, user exist
+            if(result.recordset[0] == null) response.status(400).json('post or userid does not exist');
+            else if(error) response.status(400).json('bad request')
+            else response.status(201).json(result.recordset[0].ID)
+        });
+    });
+});
 /* TODO 
 - Fix proper error messages
 */

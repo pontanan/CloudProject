@@ -210,7 +210,8 @@ app.delete('/users/:id', function(request,response){
 // Create Comment
 // Body: { "number": 1, "content": "some text", "likeCount": 40, "dislikeCount": 10, "time": 343242, "userid": 3, "postid": 4 }
 app.post('/comments', function(request,response){
-
+    console.log('hej');
+    
     var content = request.body.content;
     var like = request.body.likeCount;
     var dislike = request.body.dislikeCount;
@@ -228,14 +229,14 @@ app.post('/comments', function(request,response){
     if(!(numRegex.test(dislike))) dislike = 0
 
     var sqlRequest = new db.Request();
-
+/*
     sqlRequest.input('Content',db.Text, content);
     sqlRequest.input('Like', db.Int, like);
     sqlRequest.input('Dislike', db.Int, dislike);
     sqlRequest.input('Time', db.text, time);
     sqlRequest.input('Pid', db.Int, pid);
     sqlRequest.input('Uid', sql.Int, uid);
-
+*/
         // check if user exist before posting comment to database
         /*sqlRequest.query("SELECT Name FROM Account WHERE ID = @Uid", function(error,result){
             if(error){ 
@@ -247,7 +248,7 @@ app.post('/comments', function(request,response){
             if(result.recordset.length == 0) { response.status(400).json('user does not exist'); return; }
             console.log(result);
         });*/
-        sqlRequest.query("INSERT INTO Comment (LikeCount, DislikeCount, Content, Time, PID, Username) VALUES (@Number, @Like, @Dislike, @Content, @Time, @Pid, 'Alice'); SELECT SCOPE_IDENTITY() as ID", function(error, result){
+        sqlRequest.query("INSERT INTO Comment (LikeCount, DislikeCount, Content, Time, PID, Username) VALUES ('4', '3', 'gfdgdg', '543535', '29', 'Alice'); SELECT SCOPE_IDENTITY() as ID", function(error, result){
             
             if(error) {
                 if(error.number == 547) response.status(400).json('userid or postid does not exist');

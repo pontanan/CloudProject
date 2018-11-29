@@ -7,8 +7,11 @@ var config = {
   database: 'cityforumDB'
 }
 
-var connection = sql.connect(config, function (err) {
-  if (err) console.log(err)
+sql.connect(config, function (err) {
+  if (err) {
+    console.log('problem with server connection');
+    console.log(err); 
+   }
 })
 
 module.exports = sql

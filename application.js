@@ -1,56 +1,69 @@
-var db = require('./db')
-var express = require('express')
-var fs = require('fs')
-const { google } = require('googleapis')
+const db = require('./db')
+const fs = require('fs')
+const express = require('express')
+const bodyParser = require('body-parser')
+const oauth2 = require('simple-oauth2').create(credentials);
 
 var app = express()
-//https://github.com/googleapis/google-api-nodejs-client
+//https://resources.infosecinstitute.com/securing-web-apis-part-ii-creating-an-api-authenticated-with-oauth-2-in-node-js/#gref
 
-var authContent = fs.readFileSync('authorisation/client_auth.json')
-var jsonAuthContent = JSON.parse(authContent)
+const tokenConfig = {
+  username: 'username',
+  password: 'password'
+}
 
-const oauth2Client = new google.auth.OAuth2(
-  jsonAuthContent.web.client_id,
-  jsonAuthContent.web.client_secret,
-  jsonAuthContent.web.redirect_uris
-)
+const tokenObject = {
+  'access_token': '<access-token>',
+  'refresh_token': '<refresh-token>',
+  'expires_in': '7200'
+}
 
-const scopes = [
-  'https://www.googleapis.com/auth/plus.me',
-  'https://www.googleapis.com/auth/userinfo.email',
-  'https://www.googleapis.com/auth/userinfo.profile'
-]
-
-const url = oauth2Client.generateAuthUrl({
-  access_type: 'offline',
-  scope: scopes
-})
-
-oauth2Client.on('tokens', (tokens) => {
-  if (tokens.refresh_token) {
-    // store the refresh_token in my database!
-    console.log(tokens.refresh_token);
-  }
-  console.log(tokens.access_token);
+const authorizationUri = oauth2.authorizationCode.authorizeURL({
+  redirect_uri: 'http://localhost:5000/callback',
+  scope: 'notifications',
+  state: '3(#0/!~',
 });
 
-app.get('/', function (req, res) {
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
+
+app.get('/', (req, res) => {
+  res.send('Hello<br><a href="/auth">Log in with Github</a>');
+});
+
+app.get('/auth', (req, res) => {
+  console.log(authorizationUri)
+  res.redirect(authorizationUri)
+});
+
+//Code for OAuth2-authorization
+app.get('/callback', async (req, res) => {
+  const code = req.query.code
+  const options = {
+    code,
+  }
+
+  try {
+    const result = await oauth2.ownerPassword.getToken(tokenConfig)
+    console.log('The resulting token: ', result);
+    const accessToken = oauth2.accessToken.create(result)
+    return res.status(200).json(token)
+  } catch (error) {
+    console.log('Access Token Error', error.message)
+    return res.status(500).json('Authentication failed');
+  }
+  res.redirect(301, '/Account')
+  res.end()
+})
+
+app.get('/login', (req, res) => {
   res.redirect(301, url)
   res.end()
 })
 
-//Code for OAuth2-authorization
-app.get('/auth/google/callback', function (req, res) {
-  var authCode = req.query.code
-  var error = req.query.error
-
-  if (authCode != null) {
-    const { tokens } = oauth2Client.getToken(authCode)
-    oauth2Client.setCredentials(tokens)
-  } else { console.log(error) }
-
-  res.redirect(301, '/Account')
-  res.end()
+app.post('/login', (req, res) => {
+  console.log(req.body)
+  res.send('Posted onto login')
 })
 
 app.get('/Account', function (req, res) {
@@ -67,6 +80,8 @@ app.get('/Account', function (req, res) {
       res.send(data)
     } else { res.send('\nNo data to show!') }
   })
+
+  oauth2Client
 })
 
 var server = app.listen(5000, function () {

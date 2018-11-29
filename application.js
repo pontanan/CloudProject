@@ -40,7 +40,7 @@ app.get('/', function (req, res) {
 })
 
 //Code for OAuth2-authorization
-app.get('/oauth/authorise', function (req, res) {
+app.get('/auth/google/callback', function (req, res) {
   var authCode = req.query.code
   var error = req.query.error
 

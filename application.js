@@ -26,7 +26,7 @@ const url = oauth2Client.generateAuthUrl({
   scope: scopes
 })
 
-oauth2client.on('tokens', (tokens) => {
+oauth2Client.on('tokens', (tokens) => {
   if (tokens.refresh_token) {
     // store the refresh_token in my database!
     console.log(tokens.refresh_token);

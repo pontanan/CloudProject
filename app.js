@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const app = express();
 app.use(bodyParser.json());
 
-// regex to check numbers
+// regex to check id
 const numRegex = new RegExp('^[0-9]+$');
 
 // -------------------------------------------------------------------- Posts --------------------------------------------------------------------
@@ -14,7 +14,7 @@ const numRegex = new RegExp('^[0-9]+$');
 app.get('/posts', function(request,response){
 
         //create Request object
-        var sqlRequest = new db.Request()
+        var sqlRequest = new db.Request();
 
         //query to database to get all posts
         sqlRequest.query('SELECT * FROM Post', function(error, result){
@@ -57,12 +57,10 @@ app.get('/posts/:id',function(request,response){
 }); 
 // Description: Create a post
 // POST /posts
-// Body: { "content": "some text", "likeCount": 4, "dislikeCount": 2, "time": "43242425", "userid": 3}
+// Body: { "content": "some text", "time": "43242425", "userid": 3}
 app.post('/posts', function(request,response){
 
     var content = request.body.content;
-    var like = request.body.likeCount;
-    var dislike = request.body.dislikeCount;
     var time = request.body.time;
     var uid = request.body.userid;
 
@@ -70,22 +68,16 @@ app.post('/posts', function(request,response){
 
     // if content is not an empty string
     if(content == ""){ response.status(400).json('content can not be an empty string'); return; }
-
     // if time is not a number
     if(!(numRegex.test(time))) { response.status(400).json('Time is not a number'); return; }
-     // if like and dislike is empty or does not contain numbers, set their default to 0
-    if(!(numRegex.test(like))) like = 0
-    if(!(numRegex.test(dislike))) dislike = 0
 
         var sqlRequest = new db.Request();
 
         sqlRequest.input('Uid',db.Int, uid);
         sqlRequest.input('Content',db.Text,content);
-        sqlRequest.input('Like',db.Int,like);
-        sqlRequest.input('Dislike',db.Int, dislike);
         sqlRequest.input('Time',db.Text, time);
   
-        sqlRequest.query("INSERT INTO Post VALUES (@Content, @Like , @Dislike, @Uid, @Time); SELECT SCOPE_IDENTITY() as ID", function (error, result) {
+        sqlRequest.query("INSERT INTO Post (Content, UID, Time) VALUES (@Content, @Uid, @Time); SELECT SCOPE_IDENTITY() as ID", function (error, result) {
             if (error){
                 if(error.number == 547) response.status(400).json('user does not exist');
                 else response.status(500)
@@ -96,13 +88,41 @@ app.post('/posts', function(request,response){
         response.status(201).json('Location: posts/' + result.recordset[0].ID);
         });        
 });
+//Description: Update the like and dislike count in a post
+// UPDATE /posts/id
+// uri: id of the post
+// Body: {"like": 3, "dislike": 2}
+app.put('/posts/:id', function(request, response){
+
+    const id = parseInt(request.params.id);    
+    if(!(numRegex.test(id))){ response.status(400).json('id can not contain letters'); return; }
+
+    var like = request.body.like;
+    var dislike = request.body.dislike;
+
+    if(!(numRegex.test(like) || numRegex.test(dislike))) { response.status(400).json('like and dislike can not contain letters'); return; }
+
+    sqlRequest = new db.Request();
+    sqlRequest.input('Id', db.Int, id);
+    sqlRequest.input('Like', db.Int, like);
+    sqlRequest.input('Dislike', db.Int, dislike);
+
+
+    sqlRequest.query("UPDATE Post SET LikeCount = @Like, DislikeCount = @Dislike WHERE ID = @Id ", function(error, result){
+        if(error) {  response.status(500).end(); return; } 
+        // database or server is fuckedup and sometimes result is undefined   
+        if(!result) { response.status(400).json('post does not exist !!'); return; }
+        if(result.rowsAffected == 0) {response.status(400).json('post does not exist'); return; }
+        response.status(200).json('post updated');
+
+    });
+});
 // Description: Delete a post
 // DELETE /posts/id
 // uri: id of the post
 app.delete('/posts/:id',function(request,response){
 
-    const id = parseInt(request.params.id);
-    
+    const id = parseInt(request.params.id);   
     if(!(numRegex.test(id))){ response.status(400).json('id can not contain letters'); return; }
 
     var sqlRequest = new db.Request();
@@ -262,40 +282,33 @@ app.get('/comments/:id', function(request, response){
 });
 // Description: Create a comment
 // POST /comments
-// Body: { content": "some text", "likeCount": 40, "dislikeCount": 10, "time": 343242, "userid": 3, "postid": 4 }
+// Body: { content": "some text", "time": 343242, "postid": 4 }
 app.post('/comments', function(request, response){
 
     var content = request.body.content;
-    var like = request.body.likeCount;
-    var dislike = request.body.dislikeCount;
     var time = request.body.time;
     var pid = request.body.postid;
     var uid = request.body.userid;
+    var username = request.body.username;
 
     // if input is not valid
     if(content == "") { response.status(400).json('content can not be an empty string'); return; }
     if(!(numRegex.test(time))) { response.status(400).json('time can not contain letters'); return; }
-    if(!(numRegex.test(uid))) { response.status(400).json('userid can not contain letters'); return; }
     if(!(numRegex.test(pid))) { response.status(400).json('postid can not contain letters'); return; }
-    // set default value 0 to time of not valid
-    if(!(numRegex.test(like))) like = 0
-    if(!(numRegex.test(dislike))) dislike = 0
 
     var sqlRequest = new db.Request();
 
     sqlRequest.input('Content',db.Text, content);
-    sqlRequest.input('Like', db.Int, like);
-    sqlRequest.input('Dislike', db.Int, dislike);
     sqlRequest.input('Time', db.Text, time);
     sqlRequest.input('Pid', db.Int, pid);
-    sqlRequest.input('Uid', db.Int, uid);
      /* 
      TODO:
      Check if user exist, if so get username 
      */
-    sqlRequest.query("INSERT INTO Comment (LikeCount, DislikeCount, Content, Time, PID, Username) VALUES (@Like, @Dislike, @Content, @Time, @Pid, 'Alice'); SELECT SCOPE_IDENTITY() as ID", function(error, result){
+    sqlRequest.query("INSERT INTO Comment (Content, Time, PID, Username) VALUES (@Content, @Time, @Pid, 'Alice'); SELECT SCOPE_IDENTITY() as ID", function(error, result){
             
         if(error) {
+            response.json(error);
             if(error.number == 547) response.status(400).json('user or post does not exist');
             else response.status(500).end();  
             return;
@@ -306,9 +319,38 @@ app.post('/comments', function(request, response){
         response.status(201).json('Location: /comments/' + result.recordset[0].ID)
     });
 });
+//Description: update the like and dislike count in a comment
+// UPDATE /comments/id
+// uri: id of the comment
+// Body: {"like": 3, "dislike": 2}
+app.put('/comments/:id', function(request, response){
+    const id = parseInt(request.params.id);
+    if(!(numRegex.test(id))){ response.status(400).json('id can not contain letters'); return; }
+
+    var like = request.body.like;
+    var dislike = request.body.dislike
+
+    if(!(numRegex.test(like) || numRegex.test(dislike))) { response.status(400).json('like and dislike can not contain letters'); return; }
+
+    sqlRequest = new db.Request();
+    sqlRequest.input('Id', db.Int, id);
+    sqlRequest.input('Like', db.Int, like);
+    sqlRequest.input('Dislike', db.Int, dislike);
+
+
+    sqlRequest.query("UPDATE Comment SET LikeCount = @Like, DislikeCount = @Dislike WHERE ID = @Id ", function(error, result){
+        if(error) { response.status(500).end(); return; } 
+        // database or server is fuckedup and sometimes result is undefined   
+        if(!result) { response.status(400).json('comment does not exist !!'); return; }
+        if(result.rowsAffected == 0) {response.status(400).json('comment does not exist'); return; }
+        response.status(200).json('comment updated');
+
+        });
+});
+
 // Description: Delete a comment
 // DELETE /comments/id
-// uri: id = 3
+// uri: id of the comment 
 app.delete('/comments/:id', function(request, response){
     const id = parseInt(request.params.id);
     if(!(numRegex.test(id))){ response.status(400).json('id can not contain letters'); return; }

@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const app = express();
 app.use(bodyParser.json());
 
-// regex to check id
+// regex to check numbers
 const numRegex = new RegExp('^[0-9]+$');
 
 // -------------------------------------------------------------------- Posts --------------------------------------------------------------------
@@ -67,9 +67,9 @@ app.post('/posts', function(request,response){
     if(!(numRegex.test(uid))) { response.status(400).json('id can not contain letters')}
 
     // if content is not an empty string
-    if(content == ""){ response.status(400).json('content can not be an empty string'); return; }
-    // if time is not a number
-    if(!(numRegex.test(time))) { response.status(400).json('Time is not a number'); return; }
+    if(content == "" || content == null){ response.status(400).json('content can not be an empty string'); return; }
+    // if time is not a number or empty
+    if(!(numRegex.test(time)) || time == null) { response.status(400).json('time can not contain letters'); return; }
 
         var sqlRequest = new db.Request();
 
@@ -100,7 +100,7 @@ app.put('/posts/:id', function(request, response){
     var like = request.body.like;
     var dislike = request.body.dislike;
 
-    if(!(numRegex.test(like) || numRegex.test(dislike))) { response.status(400).json('like and dislike can not contain letters'); return; }
+    if(!(numRegex.test(like)) || !(numRegex.test(dislike))) { response.status(400).json('like and dislike can not contain letters'); return; }
 
     sqlRequest = new db.Request();
     sqlRequest.input('Id', db.Int, id);
@@ -133,7 +133,7 @@ app.delete('/posts/:id',function(request,response){
         // database or server is fuckedup and sometimes result is undefined   
         if(!result) { response.status(400).json('post does not exist !!'); return; }      
         if (result.rowsAffected == 0) { response.status(400).json('post does not exist'); return; }
-        else response.status(204).son('post deleted');
+        else response.status(204).json('post deleted');
     })
 });
 // -------------------------------------------------------------------- Users --------------------------------------------------------------------
@@ -167,9 +167,9 @@ app.post('/users', function(request, response){
     const email = request.body.email;
 
     // if input are empty 
-    if(username == "") { response.status(400).json('username can not be an empty string'); return; }
-    if(password == "") { response.status(400).json('password can not be an empty string'); return; }
-    if(email == "") { response.status(400).json('email can not be an empty string'); return; }
+    if(username == "" || username == null) { response.status(400).json('username can not be an empty string'); return; }
+    if(password == "" || password == null) { response.status(400).json('password can not be an empty string'); return; }
+    if(email == "" || email == null) { response.status(400).json('email can not be an empty string'); return; }
 
     var sqlRequest = new db.Request();
     sqlRequest.input('Username', db.VarChar, username);
@@ -195,7 +195,7 @@ app.put('/users/:id', function(request, response){
     const description = request.body.description;
 
     if(!(numRegex.test(id))){ response.status(400).json('id can not contain letters'); return; }
-    if(description == ""){ response.status(400).json('description is empty'); return; }
+    if(description == "" || description == null){ response.status(400).json('description can not be empty'); return; }
 
         var sqlRequest = new db.Request();
         sqlRequest.input('Id', db.Int, id);
@@ -330,7 +330,7 @@ app.put('/comments/:id', function(request, response){
     var like = request.body.like;
     var dislike = request.body.dislike
 
-    if(!(numRegex.test(like) || numRegex.test(dislike))) { response.status(400).json('like and dislike can not contain letters'); return; }
+    if(!(numRegex.test(like)) || !(numRegex.test(dislike))) { response.status(400).json('like and dislike can not contain letters'); return; }
 
     sqlRequest = new db.Request();
     sqlRequest.input('Id', db.Int, id);

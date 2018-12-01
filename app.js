@@ -8,6 +8,8 @@ app.use(bodyParser.json());
 // regex to check numbers
 const numRegex = new RegExp('^[0-9]+$');
 
+// -------------------------------------------------------------------- Posts --------------------------------------------------------------------
+// Description: Get a list of all posts
 // GET /posts
 app.get('/posts', function(request,response){
 
@@ -19,14 +21,15 @@ app.get('/posts', function(request,response){
             if(error){ 
                 console.log(error);
                 console.log(error.number);
-                response.status(500).end();
-            } 
+                response.status(500).end(); 
+                return; 
+            }
             else response.status(200).json(result);
         })
 });
-
+// Description: Get a specific post
 // GET /posts/id
-// uri: id = 3
+// uri: id of the post
 app.get('/posts/:id',function(request,response){
 
     // get the id from the uri
@@ -52,9 +55,9 @@ app.get('/posts/:id',function(request,response){
         response.status(200).json(result.recordset[0]);         
     })
 }); 
-
+// Description: Create a post
 // POST /posts
-// Body: { "content": "some text", "likeCount": 4, "dislikeCount": 2, "time": 43242425, "userid": 3}
+// Body: { "content": "some text", "likeCount": 4, "dislikeCount": 2, "time": "43242425", "userid": 3}
 app.post('/posts', function(request,response){
 
     var content = request.body.content;
@@ -83,20 +86,19 @@ app.post('/posts', function(request,response){
         sqlRequest.input('Time',db.Text, time);
   
         sqlRequest.query("INSERT INTO Post VALUES (@Content, @Like , @Dislike, @Uid, @Time); SELECT SCOPE_IDENTITY() as ID", function (error, result) {
-        
-        if (error){
-            if(error.number == 547) response.status(400).json('user does not exist')
-            else response.status(500)
-            return;
-        } 
+            if (error){
+                if(error.number == 547) response.status(400).json('user does not exist');
+                else response.status(500)
+                return;
+            } 
         // database or server is fuckedup and sometimes result is undefined   
         if(!result) { response.status(400).json('server connection failed'); return; }     
         response.status(201).json('Location: posts/' + result.recordset[0].ID);
         });        
 });
-
-// DELETE /posts/:id
-// uri: id = 3
+// Description: Delete a post
+// DELETE /posts/id
+// uri: id of the post
 app.delete('/posts/:id',function(request,response){
 
     const id = parseInt(request.params.id);
@@ -111,11 +113,13 @@ app.delete('/posts/:id',function(request,response){
         // database or server is fuckedup and sometimes result is undefined   
         if(!result) { response.status(400).json('post does not exist !!'); return; }      
         if (result.rowsAffected == 0) { response.status(400).json('post does not exist'); return; }
-        else response.status(204).json(id)
+        else response.status(204).son('post deleted');
     })
 });
-// GET /users/:id
-// uri: id = 3
+// -------------------------------------------------------------------- Users --------------------------------------------------------------------
+// Description: Get a user
+// GET /users/id
+// uri: id of the user
 app.get('/users/:id', function(request,response){
 
     const id = parseInt(request.params.id);
@@ -133,7 +137,7 @@ app.get('/users/:id', function(request,response){
         response.status(200).json(result.recordset[0]);
     });
 })
-
+// Description: Create a user
 // POST /users
 // Body: { "username": "Alice", "password": "3423dfs4354", "email": "alice@gmail.com" }
 app.post('/users', function(request, response){
@@ -160,9 +164,10 @@ app.post('/users', function(request, response){
         }
         response.status(201).json('Location: users/' + result.recordset[0].ID);      
     });
-});  
-// PUT /users/:id
-// uri: id = 3
+}); 
+// Description: Update a user 
+// PUT /users/id
+// uri: id of user
 // Body: { "description": "some text"}
 app.put('/users/:id', function(request, response){
 
@@ -184,7 +189,9 @@ app.put('/users/:id', function(request, response){
             response.status(200).json('user updated');
       });
 });
-// Delete user
+// Description: Delete a user
+// Delete /users/id
+// uri: id of user
 app.delete('/users/:id', function(request,response){
 
     const id = parseInt(request.params.id);
@@ -206,12 +213,58 @@ app.delete('/users/:id', function(request,response){
             response.status(204).json('user deleted')
         })
 });
+ // -------------------------------------------------------------------- Comments --------------------------------------------------------------------
+// Description: Get a list of all comments to a specific post
+// Get /id/comments  
+// uri: id of the post
+app.get('/:id/comments', function(request, response){
+    const id = parseInt(request.params.id);
+    if(!(numRegex.test(id))){ response.status(400).json('id can not contain letters'); return; }
 
-// Create Comment
-// Body: { "number": 1, "content": "some text", "likeCount": 40, "dislikeCount": 10, "time": 343242, "userid": 3, "postid": 4 }
-app.post('/comments', function(request,response){
-    console.log('hej');
-    
+    var sqlRequest = new db.Request();
+    sqlRequest.input('Id', db.Int, id);
+
+    sqlRequest.query("SELECT * FROM Comment WHERE PID = @Id", function(error, result){
+        if(error){ 
+            console.log(error);
+            console.log(error.number);
+            response.status(500).end(); 
+            return; 
+        }
+        // database or server is fuckedup and sometimes result is undefined   
+        if(!result) { response.status(400).json('post does not exist'); return; }     
+        if(result.recordset.length == 0){ response.status(400).json('post does not exist'); return; }
+        response.status(200).json(result);  
+    })
+});
+// Description: Get a comment
+// GET /comments/id  
+// uri: id of the comment
+app.get('/comments/:id', function(request, response){
+    const id = parseInt(request.params.id);
+    if(!(numRegex.test(id))){ response.status(400).json('id can not contain letters'); return; }
+
+    var sqlRequest = new db.Request();
+    sqlRequest.input('Id', db.Int, id);
+
+    sqlRequest.query("SELECT * FROM Comment WHERE ID = @Id", function (error, result){
+        if(error){ 
+            console.log(error);
+            console.log(error.number);
+            response.status(500).end(); 
+            return; 
+        }
+        // database or server is fuckedup and sometimes result is undefined   
+        if(!result) { response.status(400).json('comment does not exist'); return; }     
+        if(result.recordset.length == 0){ response.status(400).json('comment does not exist'); return; }
+        response.status(200).json(result.recordset[0]);  
+    })
+});
+// Description: Create a comment
+// POST /comments
+// Body: { content": "some text", "likeCount": 40, "dislikeCount": 10, "time": 343242, "userid": 3, "postid": 4 }
+app.post('/comments', function(request, response){
+
     var content = request.body.content;
     var like = request.body.likeCount;
     var dislike = request.body.dislikeCount;
@@ -229,37 +282,55 @@ app.post('/comments', function(request,response){
     if(!(numRegex.test(dislike))) dislike = 0
 
     var sqlRequest = new db.Request();
-/*
+
     sqlRequest.input('Content',db.Text, content);
     sqlRequest.input('Like', db.Int, like);
     sqlRequest.input('Dislike', db.Int, dislike);
-    sqlRequest.input('Time', db.text, time);
+    sqlRequest.input('Time', db.Text, time);
     sqlRequest.input('Pid', db.Int, pid);
-    sqlRequest.input('Uid', sql.Int, uid);
-*/
-        // check if user exist before posting comment to database
-        /*sqlRequest.query("SELECT Name FROM Account WHERE ID = @Uid", function(error,result){
-            if(error){ 
-                console.log(error.number);
-                response.status(500).end(); 
-            }
-            // database or server is fuckedup and sometimes result is undefined   
-            if(!result) { response.status(400).json('user does not exist !!'); return; }   
-            if(result.recordset.length == 0) { response.status(400).json('user does not exist'); return; }
-            console.log(result);
-        });*/
-        sqlRequest.query("INSERT INTO Comment (LikeCount, DislikeCount, Content, Time, PID, Username) VALUES ('4', '3', 'gfdgdg', '543535', '29', 'Alice'); SELECT SCOPE_IDENTITY() as ID", function(error, result){
+    sqlRequest.input('Uid', db.Int, uid);
+     /* 
+     TODO:
+     Check if user exist, if so get username 
+     */
+    sqlRequest.query("INSERT INTO Comment (LikeCount, DislikeCount, Content, Time, PID, Username) VALUES (@Like, @Dislike, @Content, @Time, @Pid, 'Alice'); SELECT SCOPE_IDENTITY() as ID", function(error, result){
             
-            if(error) {
-                if(error.number == 547) response.status(400).json('userid or postid does not exist');
-                else response.status(500).end();  
-                return;
-            }
-            // database or server is fuckedup and sometimes result is undefined   
-            if(!result) { response.status(400).json('userid or postid does not exist !!'); return; }          
-            response.status(201).json('Location: /comments/' + result.recordset[0].ID)
-        });
-}); 
+        if(error) {
+            if(error.number == 547) response.status(400).json('user or post does not exist');
+            else response.status(500).end();  
+            return;
+        }
+        // database or server is fuckedup and sometimes result is undefined   
+        if(!result) { response.status(400).json('user or post does not exist !!'); return; }   
+        //response.json(result);
+        response.status(201).json('Location: /comments/' + result.recordset[0].ID)
+    });
+});
+// Description: Delete a comment
+// DELETE /comments/id
+// uri: id = 3
+app.delete('/comments/:id', function(request, response){
+    const id = parseInt(request.params.id);
+    if(!(numRegex.test(id))){ response.status(400).json('id can not contain letters'); return; }
+
+    var sqlRequest = new db.Request();
+    sqlRequest.input('Id', db.Int, id);
+
+    
+    sqlRequest.query("DELETE FROM Comment WHERE ID = @Id", function (error, result){
+        if (error) {
+            console.log(error.number);
+            console.log(error);
+            response.status(500).json(error);
+            return; 
+        } 
+        // database or server is fuckedup and sometimes result is undefined   
+        if(!result) { response.status(400).json('comment does not exist !!'); return; }
+        if (result.rowsAffected == 0) { response.status(400).json('comment does not exist'); return; }
+        response.status(204).json('comment deleted')
+    })
+
+})
 /* TODO 
 - Fix proper error messages
 */

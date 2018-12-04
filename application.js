@@ -2,15 +2,32 @@ const db = require('./db')
 const fs = require('fs')
 const express = require('express')
 const bodyParser = require('body-parser')
-const oauth2 = require('simple-oauth2').create(credentials);
+const { Issuer } = require('openid-client')
 
 var app = express()
-//https://resources.infosecinstitute.com/securing-web-apis-part-ii-creating-an-api-authenticated-with-oauth-2-in-node-js/#gref
 
-const tokenConfig = {
-  username: 'username',
-  password: 'password'
-}
+var authContent = fs.readFileSync('authorisation/client_auth.json')
+var jsonAuthContent = JSON.parse(authContent)
+//https://resources.infosecinstitute.com/securing-web-apis-part-ii-creating-an-api-authenticated-with-oauth-2-in-node-js/#gref
+//https://www.scottbrady91.com/OpenID-Connect/Getting-Started-with-oidc-provider
+
+Issuer.discover('https://accounts.google.com')
+  .then(function (googleIssuer) {
+    console.log('Discovered issuer %s %O', googleIssuer.issuer, googleIssuer.metadata)
+  })
+
+const client = new googleIssuer.client({
+  client_id: jsonAuthContent.web.client_id,
+  client_secret: jsonAuthContent.web.client_secret
+}, [keystore])
+
+client.authorizationUrl({
+  redirect_uri: jsonAuthContent.web.redirect_uri,
+  scope: 'openid email'
+})
+
+const { state, response_type } = session[authorizationRequestState]
+client.authorizationCallback('https://localhost:5000/callback')
 
 const tokenObject = {
   'access_token': '<access-token>',

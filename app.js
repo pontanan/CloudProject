@@ -1,9 +1,16 @@
-var db = require('./db')
+var db = require('./db');
 const express = require('express');
 const bodyParser = require('body-parser');
 
+const fileBucket = require('./fileBucket');
+
 const app = express();
 app.use(bodyParser.json());
+
+app.post('/image-upload', fileBucket.single('image'), function(req, res, next) {
+    
+    res.send('image' + req.file.filename + next.error);
+  })
 
 // regex to check numbers
 const numRegex = new RegExp('^[0-9]+$');

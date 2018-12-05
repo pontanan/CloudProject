@@ -1,10 +1,13 @@
+//Sources
+//https://github.com/googleapis/google-api-nodejs-client
+
 var db = require('./db')
 var express = require('express')
 var fs = require('fs')
 const { google } = require('googleapis')
 
+//OLD VERSION, ONLY DOES GOOGLE AUTHENTICATION WITH OAUTH2.0
 var app = express()
-//https://github.com/googleapis/google-api-nodejs-client
 
 var authContent = fs.readFileSync('authorisation/client_auth.json')
 var jsonAuthContent = JSON.parse(authContent)

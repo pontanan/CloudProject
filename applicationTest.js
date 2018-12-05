@@ -15,42 +15,36 @@ const oauth2Client = new google.auth.OAuth2(
   jsonAuthContent.web.redirect_uris
 )
 
-const scopes = [
-  'https://www.googleapis.com/auth/plus.me',
-  'https://www.googleapis.com/auth/userinfo.email',
-  'https://www.googleapis.com/auth/userinfo.profile'
-]
+const authUrl = 'https://accounts.google.com/o/oauth2/v2/auth?client_id=907310423522-jeltf2brm30cidh0nvgiooqu2suq59uj.apps.googleusercontent.com&redirect_uri=http://localhost:5000/auth/google/callback&response_type=code&scope=openid'
+var authCode = ''
+const tokenUrl = 'https://accounts.google.com/o/oauth2/v4/token?code=4/qQB_Z8n9-vWr-fKlxX4E55BwHMfClfC03YkBUgUcxOjl1VG_BSOEJAhDHxdDY87S53SDL9yspPo6EsNEtGpsNwY&client_id=907310423522-jeltf2brm30cidh0nvgiooqu2suq59uj.apps.googleusercontent.com&client_secret=l41DuithJ-LkXTUqnVnTZull&redirect_uri=http://localhost:5000/auth/google/callback&grant_type=authorization_code'
+var tokenID = ''
 
-const url = oauth2Client.generateAuthUrl({
-  access_type: 'offline',
-  scope: scopes
-})
-
-oauth2Client.on('tokens', (tokens) => {
-  if (tokens.refresh_token) {
-    // store the refresh_token in my database!
-    console.log(tokens.refresh_token);
-  }
-  console.log(tokens.access_token);
-});
 
 app.get('/', function (req, res) {
-  res.redirect(301, url)
+  res.redirect(301, authUrl)
   res.end()
 })
 
 //Code for OAuth2-authorization
 app.get('/auth/google/callback', function (req, res) {
-  var authCode = req.query.code
-  var error = req.query.error
+  if(tokenID == '') {
+    authCode = req.query.code
+    console.log('Auth Code: %s', authCode)
 
-  if (authCode != null) {
-    const { tokens } = oauth2Client.getToken(authCode)
-    oauth2Client.setCredentials(tokens)
-  } else { console.log(error) }
+    res.redirect(301, tokenUrl)
+    res.end()
+  } else { 
+    tokenID = req.query.id_token
+    console.log('ID Token: %s', tokenID)
 
-  res.redirect(301, '/Account')
-  res.end()
+    res.redirect(301, '/Account')
+    res.end() 
+  }
+})
+
+app.post('/token/google/callback', function (req, res) {
+
 })
 
 app.get('/Account', function (req, res) {

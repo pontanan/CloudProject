@@ -1,106 +1,72 @@
+//GUIDES FOR USE//
+//////////////////
+//https://www.oauth.com/oauth2-servers/access-tokens/authorization-code-request/
+//https://stackoverflow.com/questions/45174857/how-to-redirect-to-post-request-in-express
+//https://auth0.com/docs/api-auth/tutorials/authorization-code-grant
+//https://scotch.io/tutorials/use-expressjs-to-get-url-and-post-parameters
+//https://www.scottbrady91.com/OpenID-Connect/Getting-Started-with-oidc-provider#disco
+//////////////////
 const db = require('./db')
 const fs = require('fs')
 const express = require('express')
 const bodyParser = require('body-parser')
-const { Issuer } = require('openid-client')
 
 var app = express()
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({extended: false}))
 
 var authContent = fs.readFileSync('authorisation/client_auth.json')
-var jsonAuthContent = JSON.parse(authContent)
-//https://resources.infosecinstitute.com/securing-web-apis-part-ii-creating-an-api-authenticated-with-oauth-2-in-node-js/#gref
-//https://www.scottbrady91.com/OpenID-Connect/Getting-Started-with-oidc-provider
+var authConfig = JSON.parse(authContent)
+const client_id = authConfig.web.client_id
+const client_secret = authConfig.web.client_secret
+const redirect_uri = authConfig.web.redirect_uris
+const auth_uri = authConfig.web.auth_uri
+const token_uri = authConfig.web.token_uri
 
-Issuer.discover('https://accounts.google.com')
-  .then(function (googleIssuer) {
-    console.log('Discovered issuer %s %O', googleIssuer.issuer, googleIssuer.metadata)
+///////////////////////////////////////////////////////////
+//CURRENT STATUS: FUNCTIONING -> WORKS TO A CERTAIN POINT//
+///////////////////////////////////////////////////////////
+
+//Authentication URL
+var authUrl = `${auth_uri}?client_id=${client_id}&redirect_uri=${redirect_uri}&response_type=token&scope=openid`
+
+  app.get('/', function (req, res) {
+    
   })
 
-const client = new googleIssuer.client({
-  client_id: jsonAuthContent.web.client_id,
-  client_secret: jsonAuthContent.web.client_secret
-}, [keystore])
-
-client.authorizationUrl({
-  redirect_uri: jsonAuthContent.web.redirect_uri,
-  scope: 'openid email'
-})
-
-const { state, response_type } = session[authorizationRequestState]
-client.authorizationCallback('https://localhost:5000/callback')
-
-const tokenObject = {
-  'access_token': '<access-token>',
-  'refresh_token': '<refresh-token>',
-  'expires_in': '7200'
-}
-
-const authorizationUri = oauth2.authorizationCode.authorizeURL({
-  redirect_uri: 'http://localhost:5000/callback',
-  scope: 'notifications',
-  state: '3(#0/!~',
-});
-
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json())
-
-app.get('/', (req, res) => {
-  res.send('Hello<br><a href="/auth">Log in with Github</a>');
-});
-
-app.get('/auth', (req, res) => {
-  console.log(authorizationUri)
-  res.redirect(authorizationUri)
-});
-
-//Code for OAuth2-authorization
-app.get('/callback', async (req, res) => {
-  const code = req.query.code
-  const options = {
-    code,
-  }
-
-  try {
-    const result = await oauth2.ownerPassword.getToken(tokenConfig)
-    console.log('The resulting token: ', result);
-    const accessToken = oauth2.accessToken.create(result)
-    return res.status(200).json(token)
-  } catch (error) {
-    console.log('Access Token Error', error.message)
-    return res.status(500).json('Authentication failed');
-  }
-  res.redirect(301, '/Account')
-  res.end()
-})
-
-app.get('/login', (req, res) => {
-  res.redirect(301, url)
-  res.end()
-})
-
-app.post('/login', (req, res) => {
-  console.log(req.body)
-  res.send('Posted onto login')
-})
-
-app.get('/Account', function (req, res) {
-  var request = new db.Request()
-
-  // query to the database and get the records
-  request.query('select * from Account', function (err, result) {
-    if (err) { console.log(err); res.send(err.message) }
-
-    // send records as a response
-    if (result != null) {
-      var data = {}
-      data['user'] = result.recordset
-      res.send(data)
-    } else { res.send('\nNo data to show!') }
+  //Login
+  //Redirects to google authentication
+  app.get('/login', function (req, res) {
+    res.redirect(301, authUrl)
+    res.end()
   })
 
-  oauth2Client
-})
+  //Google-auth callback
+  //gets authentication code from google
+  app.get('/auth/google/callback', function (req, res) {
+    const authCode = req.query.code
 
-var server = app.listen(5000, function () {
-  console.log('Server is running..')
-})
+    //Needs to be put as a POST towards TOKEN_URI
+    var tokenUrl = `${token_uri}?code=${authCode}&client_id=${client_id}&client_secret=${client_secret}&redirect_uri=http://localhost:5000/token/google/callback&grant_type=authorization_code`
+    console.log(tokenUrl)
+    
+    res.redirect(307, tokenUrl)
+  })
+
+  //posting auth code for token_id
+  //Needs to be made so that the authorization code can be posted to TOKEN_URI, to get token_id
+  app.post('/token/google/callback', function (req, res) {
+    var tokenId = req.query.id_token
+    console.log(tokenId)
+
+    res.redirect(301, '/Account')
+  })
+
+  app.get('/Account', function (req, res) {
+    res.send('It worked!')
+  })
+
+  //Server listener
+  app.listen(5000, function () {
+    console.log('Server Running...')
+  });

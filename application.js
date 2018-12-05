@@ -91,7 +91,6 @@ app.get('/me', function(req, res) {
 
     sqlRequest.query("SELECT * FROM Account WHERE ID = @Id", function(error, result){
         if(error){ res.status(500).json(error); return; }
-        // database or server is fuckedup and sometimes result is undefined   
         if(!result) { res.status(400).json('user does not exist !!'); return; }   
         if(result.recordset.length == 0) { res.status(400).json('user does not exist'); return; }
         res.status(200).json(result.recordset[0]);
@@ -143,8 +142,7 @@ app.get('/auth/google/callback', function (req, res) {
 
       //TODO: make so google_id can be saved
       sqlRequest.query("UPDATE Account SET google_id = @Google_id WHERE ID = @Id ", function(error, result){
-        if(error) { res.status(500).json(error); return; } 
-        // server is fuckedup and sometimes result is undefined   
+        if(error) { res.status(500).json(error); return; }   
         if(!result) { res.status(400).json('user does not exist !!'); return; }
         if(result.rowsAffected == 0) {res.status(400).json('user does not exist'); return; }
         res.status(200).redirect(301, '/Account')

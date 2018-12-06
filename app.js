@@ -1,15 +1,15 @@
 var db = require('./db');
 const express = require('express');
 const bodyParser = require('body-parser');
-
 const fileBucket = require('./fileBucket');
 
 const app = express();
 app.use(bodyParser.json());
 
-app.post('/image-upload', fileBucket.single('image'), function(req, res, next) {
-    
-    res.send('image' + req.file.filename + next.error);
+// Upload profile picture
+// TODO: Set imagename as username
+  app.post('/images', fileBucket.single('image'), function(req, res, next) {
+    res.send('Successfully uploaded ' + req.file)
   })
 
 // regex to check numbers

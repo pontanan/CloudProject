@@ -10,16 +10,16 @@ app.use(bodyParser.json());
 app.get('/images/:id', function(request, response){
 
     // get the id(picture name) from the uri
-    const id = parseInt(request.params.id);
+    const id = request.params.id;
 
     var params = {
         Bucket: "cityforum-bucket-123", 
-        Key: String(id)
+        Key: id
     };
-    
+
        fileBucket.s3.getObject(params, function(error, data) {
          if (error) response.json(error);
-         else  response.json(data);           
+         else  response.contentType('image/jpeg').json(data);           
          /*
          data = {
           AcceptRanges: "bytes", 
@@ -39,7 +39,7 @@ app.get('/images/:id', function(request, response){
 // Upload profile picture
 // TODO: Set image name as username or userid
   app.post('/images', fileBucket.upload.single('image'), function(request, response, next) {
-    response.send('Successfully uploaded ' + request.file)
+    response.send('Successfully uploaded ' + request)
   })
 
 // regex to check numbers
@@ -176,25 +176,38 @@ app.delete('/posts/:id',function(request,response){
 // -------------------------------------------------------------------- Users --------------------------------------------------------------------
 // Description: Get a user
 // GET /users/id
-// uri: id of the user 
+// uri: id of the user or username
 app.get('/users/:id', function(request,response){
 
-    const id = parseInt(request.params.id);
+    const id = request.params.id;
     var sqlRequest = new db.Request();
-    console.log(id);
 
+    // username is in the parameter
     if(!(numRegex.test(id))){ 
-        response.status(400).json('id can not contain letters');
+
+        sqlRequest.input('Username',db.VarChar, id);
+
+        sqlRequest.query("SELECT * FROM Account WHERE Name = @Username", function(error, result){
+            if(error){ response.status(500).json(error); return; }
+            // database or server is fuckedup and sometimes result is undefined   
+            if(!result) { response.status(400).json('user does not exist !!'); return; }   
+            if(result.recordset.length == 0) { response.status(400).json('user does not exist'); return; }
+            response.status(200).json("id: " + result.recordset[0].ID + " email: " + result.recordset[0].Email + " description: " + result.recordset[0].Description);
+        }); 
+    } 
+    else {
+        // id is in the parameter
+        sqlRequest.input('Id',db.Int, parseInt(id));
+
+        sqlRequest.query("SELECT * FROM Account WHERE ID = @Id", function(error, result){
+            if(error){ response.status(500).json(error); return; }
+            // database or server is fuckedup and sometimes result is undefined   
+            if(!result) { response.status(400).json('user does not exist !!'); return; }   
+            if(result.recordset.length == 0) { response.status(400).json('user does not exist'); return; }
+            response.status(200).json("name: " + result.recordset[0].Name + " email: " + result.recordset[0].Email + " description: " + result.recordset[0].Description);
+        }); 
     }
     
-    sqlRequest.input('Id',db.Int, id);
-    sqlRequest.query("SELECT * FROM Account WHERE ID = @Id", function(error, result){
-        if(error){ response.status(500).json(error); return; }
-        // database or server is fuckedup and sometimes result is undefined   
-        if(!result) { response.status(400).json('user does not exist !!'); return; }   
-        if(result.recordset.length == 0) { response.status(400).json('user does not exist'); return; }
-        response.status(200).json("name: " + result.recordset[0].Name + " email: " + result.recordset[0].Email + " description: " + result.recordset[0].Description);
-    }); 
 })
 // Description: Create a user
 // POST /users

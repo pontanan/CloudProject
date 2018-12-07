@@ -6,10 +6,40 @@ const fileBucket = require('./fileBucket');
 const app = express();
 app.use(bodyParser.json());
 
+// Download profile picture
+app.get('/images/:id', function(request, response){
+
+    // get the id(picture name) from the uri
+    const id = parseInt(request.params.id);
+
+    var params = {
+        Bucket: "cityforum-bucket-123", 
+        Key: String(id)
+    };
+    
+       fileBucket.s3.getObject(params, function(error, data) {
+         if (error) response.json(error);
+         else  response.json(data);           
+         /*
+         data = {
+          AcceptRanges: "bytes", 
+          ContentLength: 3191, 
+          ContentType: "image/jpeg", 
+          ETag: "\"6805f2cfc46c0f04559748bb039d69ae\"", 
+          LastModified: <Date Representation>, 
+          Metadata: {
+          }, 
+          TagCount: 2, 
+          VersionId: "null"
+         }
+         */
+       });
+})
+
 // Upload profile picture
-// TODO: Set imagename as username
-  app.post('/images', fileBucket.single('image'), function(req, res, next) {
-    res.send('Successfully uploaded ' + req.file)
+// TODO: Set image name as username or userid
+  app.post('/images', fileBucket.upload.single('image'), function(request, response, next) {
+    response.send('Successfully uploaded ' + request.file)
   })
 
 // regex to check numbers
@@ -146,23 +176,25 @@ app.delete('/posts/:id',function(request,response){
 // -------------------------------------------------------------------- Users --------------------------------------------------------------------
 // Description: Get a user
 // GET /users/id
-// uri: id of the user
+// uri: id of the user 
 app.get('/users/:id', function(request,response){
 
     const id = parseInt(request.params.id);
-
-    if(!(numRegex.test(id))){ response.status(400).json('id can not contain letters'); return; }
-
     var sqlRequest = new db.Request();
-    sqlRequest.input('Id',db.Int, id);
+    console.log(id);
 
+    if(!(numRegex.test(id))){ 
+        response.status(400).json('id can not contain letters');
+    }
+    
+    sqlRequest.input('Id',db.Int, id);
     sqlRequest.query("SELECT * FROM Account WHERE ID = @Id", function(error, result){
         if(error){ response.status(500).json(error); return; }
         // database or server is fuckedup and sometimes result is undefined   
         if(!result) { response.status(400).json('user does not exist !!'); return; }   
         if(result.recordset.length == 0) { response.status(400).json('user does not exist'); return; }
-        response.status(200).json(result.recordset[0]);
-    });
+        response.status(200).json("name: " + result.recordset[0].Name + " email: " + result.recordset[0].Email + " description: " + result.recordset[0].Description);
+    }); 
 })
 // Description: Create a user
 // POST /users

@@ -20,9 +20,13 @@ var upload = multer({
       cb(null, {fieldName: file.fieldname});
     },
     key: function (req, file, cb) {
-      cb(null, Date.now().toString() + '.png')
+      cb(null, Date.now().toString())
     }
   })
 })
  
-module.exports = upload;
+
+module.exports = {
+  upload,
+  s3
+}

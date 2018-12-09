@@ -13,6 +13,7 @@ var jwtSecret = 'This is test'
 
 //login page
 //Checks user, hashed passwords and adds JWT token
+//Login with username and a hashed password
 app.post('/login', function (req, res) {
   const username = req.body.username
   const password = req.body.password
@@ -24,24 +25,21 @@ app.post('/login', function (req, res) {
   sqlRequest.input('Username', db.VarChar, username);
 
   sqlRequest.query('SELECT * FROM Account WHERE Name = @Username', function (error, result) {
-    try{
-      var hash = result.recordset[0].Password
+    try{ var hash = result.recordset[0].Password} 
+    catch(err) { return res.status(404).send('Account not found')}
       
       if(bcrypt.compareSync(password, hash)){
-        var token = jwt.sign(req.body, jwtSecret);
+        var token = jwt.sign(req.body.username, jwtSecret);
         res.status(201).send({accessToken: token});
       } else {
         return res.status(400).send({errors: ['Invalid Username or Password']})
       }
-    } catch(err) {
-      return res.send('ERROR: Unkown')
-    }
-
   })
 })
 
 
 //TEST
+//Get to page using 'Authorization' Header with 'Bearer <Access Token>' (the access token given after login)
 //Add 'authorize' to authorize page
 //Example: app.get('/users', authorize, function (request, response) {})
 app.get('/test', authorize, function (req, res) {

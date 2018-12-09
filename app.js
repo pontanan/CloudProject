@@ -42,7 +42,7 @@ app.get('/images/:id', function(request, response){
 // Upload profile picture
 // TODO: Set image name as userid
   app.post('/images', fileBucket.upload.single('image'), function(request, response, next) {
-    response.send('Successfully uploaded ' + request)
+    response.status(200).json('Location: /images/' + request.file.Name);
   })
 
 // -------------------------------------------------------------------- Posts --------------------------------------------------------------------
@@ -92,12 +92,13 @@ app.get('/posts/:id',function(request,response){
 }); 
 // Description: Create a post
 // POST /posts
-// Body: { "content": "some text", "time": "43242425", "userid": 3}
+// Body: { "content": "some text", "time": "43242425", "userid": 3, "city": "Huskvarna"}
 app.post('/posts', function(request,response){
 
     var content = request.body.content;
     var time = request.body.time;
     var uid = request.body.userid;
+    var city = request.body.city;
 
     if(!(numRegex.test(uid))) { response.status(400).json('id can not contain letters')}
 
@@ -111,8 +112,9 @@ app.post('/posts', function(request,response){
         sqlRequest.input('Uid',db.Int, uid);
         sqlRequest.input('Content',db.Text,content);
         sqlRequest.input('Time',db.Text, time);
+        sqlRequest.input('City',db.Text, city);
   
-        sqlRequest.query("INSERT INTO Post (Content, UID, Time) VALUES (@Content, @Uid, @Time); SELECT SCOPE_IDENTITY() as ID", function (error, result) {
+        sqlRequest.query("INSERT INTO Post (Content, UID, Time, City) VALUES (@Content, @Uid, @Time, @City); SELECT SCOPE_IDENTITY() as ID", function (error, result) {
             if (error){
                 if(error.number == 547) response.status(400).json('user does not exist' + error);
                 else response.status(500).json(error);
@@ -339,7 +341,7 @@ app.post('/comments', function(request, response){
     sqlRequest.query("INSERT INTO Comment (Content, Time, PID, Username) VALUES (@Content, @Time, @Pid, 'Alice'); SELECT SCOPE_IDENTITY() as ID", function(error, result){
             
         if(error) {
-            if(error.number == 547) response.status(400).json('user or post does not exist' + error);
+            if(error.number == 547) response.status(404).json('post does not exist');
             else response.status(500).json(error);  
             return;
         }

@@ -38,6 +38,7 @@ CREATE TABLE Post
 	LikeCount int DEFAULT '0' NOT NULL,
 	DislikeCount int DEFAULT '0' NOT NULL,
 	Time text,
+	City text DEFAULT 'Stockholm',
 	UID int FOREIGN KEY REFERENCES Account(ID) ON DELETE CASCADE
 );
 GO

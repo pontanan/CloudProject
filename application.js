@@ -45,10 +45,10 @@ app.post('/login', function (req, res) {
 //Add 'authorize' to authorize page
 //Example: app.get('/users', authorize, function (request, response) {})
 app.get('/test', authorize, function (req, res) {
-  var request = new db.Request()
+  var sqlRequest = new db.Request()
 
   // query to the database and get the records
-  request.query('select * from Account', function (err, result) {
+  sqlRequest.query('select * from Account', function (err, result) {
     if (err) { console.log(err); res.send(err.message) }
 
     // send records as a response

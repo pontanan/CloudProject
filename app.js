@@ -1,11 +1,13 @@
 var db = require('./db');
 const express = require('express');
 const bodyParser = require('body-parser');
+const bcrypt = require('bcryptjs')
 
 const fileBucket = require('./fileBucket');
 
 const app = express();
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.post('/image-upload', fileBucket.single('image'), function(req, res, next) {
     
@@ -172,15 +174,21 @@ app.post('/users', function(request, response){
     const username = request.body.username;
     const password = request.body.password;
     const email = request.body.email;
+    console.log(request.body.username)
+    console.log(request.body.password)
+    console.log(request.body)
 
     // if input are empty 
     if(username == "" || username == null) { response.status(422).json('username can not be an empty string'); return; }
     if(password == "" || password == null) { response.status(422).json('password can not be an empty string'); return; }
     if(email == "" || email == null) { response.status(422).json('email can not be an empty string'); return; }
 
+    var salt = bcrypt.genSaltSync(10)
+    var hash = bcrypt.hashSync(password, salt)
+
     var sqlRequest = new db.Request();
     sqlRequest.input('Username', db.VarChar, username);
-    sqlRequest.input('Password',db.VarChar,password);
+    sqlRequest.input('Password',db.VarChar,hash);
     sqlRequest.input('Email', db.VarChar, email); 
 
     sqlRequest.query("INSERT INTO Account (Name, Password, Email) VALUES (@Username, @Password, @Email); SELECT SCOPE_IDENTITY() as ID", function (error, result) {

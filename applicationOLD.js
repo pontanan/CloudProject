@@ -8,7 +8,7 @@
 //https://auth0.com/docs/tokens/id-token
 //https://medium.freecodecamp.org/securing-node-js-restful-apis-with-json-web-tokens-9f811a92bb52
 //////////////////
-const db = require('./db')
+/*const db = require('./db')
 const fs = require('fs')
 const express = require('express')
 const bodyParser = require('body-parser')
@@ -64,7 +64,7 @@ app.get('/', function (req, res) {
 
 //Login
 //Redirects to google authentication
-app.get('/createToken', function (req, res) {
+/*app.get('/createToken', function (req, res) {
 
   const uId = 15
   
@@ -159,4 +159,4 @@ app.get('/Account', function (req, res) {
 //Server listener
 app.listen(5000, function () {
   console.log('Server Running...')
-})
+})*/
